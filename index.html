@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생태와 환경 퀴즈게임</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Noto Sans KR", sans-serif; }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    height: 100vh;
+    color: #fff;
+  }
+
+  .quiz-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 40px;
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    transition: 0.3s;
+  }
+
+  h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+  }
+
+  .question {
+    font-size: 1.3em;
+    margin-bottom: 20px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  button.option {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    padding: 12px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button.option:hover {
+    background: rgba(255,255,255,0.4);
+    transform: scale(1.03);
+  }
+
+  .next-btn, .restart-btn {
+    margin-top: 25px;
+    background: #fff;
+    color: #27ae60;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1em;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .next-btn:hover, .restart-btn:hover {
+    background: #27ae60;
+    color: #fff;
+  }
+
+  .score {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade {
+    animation: fadeIn 0.4s ease;
+  }
+</style>
+</head>
+<body>
+<div class="quiz-container fade" id="quiz">
+  <h1>🌿 생태와 환경 퀴즈 🌎</h1>
+  <div id="quiz-content">
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+    <button class="next-btn" id="next-btn" style="display:none;">다음</button>
+  </div>
+</div>
+
+<script>
+const quizData = [
+  { q: "지구의 평균 온도 상승의 주요 원인은?", a: ["산성비", "온실가스", "오존층", "화산활동"], correct: 1 },
+  { q: "생물다양성이란?", a: ["식물의 수", "생물의 다양한 형태와 유전적 다양성", "기후의 변화", "물의 순환"], correct: 1 },
+  { q: "플라스틱 오염의 주된 문제는?", a: ["빠르게 분해됨", "해양 생태계 파괴", "토양 비옥화", "온도 하강"], correct: 1 },
+  { q: "탄소중립이란?", a: ["탄소를 모두 없애는 것", "배출한 만큼 흡수해 순배출을 0으로 만드는 것", "탄소세를 부과하는 것", "탄소를 저장하는 것"], correct: 1 },
+  { q: "멸종위기종의 뜻은?", a: ["많이 발견되는 종", "멸종할 위험에 처한 종", "새로 발견된 종", "외래 침입종"], correct: 1 },
+  { q: "재생에너지가 아닌 것은?", a: ["태양광", "풍력", "석탄", "수력"], correct: 2 },
+  { q: "미세먼지의 주요 원인 중 하나는?", a: ["바람", "화석연료 연소", "강수량 감소", "자외선"], correct: 1 },
+  { q: "먹이사슬이란?", a: ["식물이 물을 흡수하는 과정", "생물 간의 먹고 먹히는 관계", "새의 번식 방식", "기후의 변화"], correct: 1 },
+  { q: "산성비의 주된 원인은?", a: ["질소산화물과 황산화물", "탄산가스", "수증기", "질소비료"], correct: 0 },
+  { q: "지속가능한 발전이란?", a: ["현재 세대만을 위한 발전", "미래 세대의 필요를 훼손하지 않는 발전", "경제성만 추구하는 발전", "기술 중심의 발전"], correct: 1 },
+];
+
+let current = 0;
+let score = 0;
+
+const questionEl = document.getElementById("question");
+const optionsEl = document.getElementById("options");
+const nextBtn = document.getElementById("next-btn");
+const quiz = document.getElementById("quiz");
+
+function loadQuestion() {
+  const q = quizData[current];
+  questionEl.textContent = `Q${current + 1}. ${q.q}`;
+  optionsEl.innerHTML = "";
+  q.a.forEach((option, index) => {
+    const btn = document.createElement("button");
+    btn.textContent = option;
+    btn.classList.add("option");
+    btn.onclick = () => selectAnswer(index);
+    optionsEl.appendChild(btn);
+  });
+}
+
+function selectAnswer(index) {
+  const q = quizData[current];
+  const buttons = document.querySelectorAll(".option");
+  buttons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correct) b.style.background = "#2ecc71";
+    else if (i === index) b.style.background = "#e74c3c";
+  });
+  if (index === q.correct) score++;
+  nextBtn.style.display = "inline-block";
+}
+
+function showResult() {
+  quiz.innerHTML = `
+    <h1>🎉 결과 🎉</h1>
+    <div class="score">당신의 점수: ${score} / ${quizData.length}</div>
+    <button class="restart-btn" onclick="restart()">다시하기</button>
+  `;
+}
+
+nextBtn.addEventListener("click", () => {
+  current++;
+  if (current < quizData.length) {
+    nextBtn.style.display = "none";
+    loadQuestion();
+  } else {
+    showResult();
+  }
+});
+
+function restart() {
+  current = 0;
+  score = 0;
+  quiz.innerHTML = `
+    <h1>🌿 생태와 환경 퀴즈 🌎</h1>
+    <div id="quiz-content">
+      <div class="question" id="question"></div>
+      <div class="options" id="options"></div>
+      <button class="next-btn" id="next-btn" style="display:none;">다음</button>
+    </div>
+  `;
+  document.getElementById("next-btn").addEventListener("click", () => {
+    current++;
+    if (current < quizData.length) {
+      document.getElementById("next-btn").style.display = "none";
+      loadQuestion();
+    } else {
+      showResult();
+    }
+  });
+  loadQuestion();
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
